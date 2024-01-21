@@ -1,0 +1,8 @@
+commande :
+
+ls -l
+
+Affiche les droits présents sur les fichiers
+N’affiche pas les fichiers cachés
+Tri par ordre de dernière modification
+Affiche de la plus ancienne à la plus récente modification
