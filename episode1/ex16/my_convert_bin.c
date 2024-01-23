@@ -7,24 +7,29 @@ void my_convert_bin(char *mot);
 
 int main(int argc, char const *argv[])
 {
-    if (argc != 2)
+    // if (argc != 2)
+    // {
+    //     fprintf(stderr, "Usage: %s <word>\n", argv[0]);
+    //     return 1;
+    // }
+
+    // int length = strlen(argv[1]);
+    // char *mot = malloc(length + 1);
+
+    // if (mot == NULL)
+    // {
+    //     fprintf(stderr, "Erreur d'allocation de mémoire\n");
+    //     return 1;
+    // }
+
+    // strcpy(mot, argv[1]);
+    int i = 1;
+
+    while (i < argc)
     {
-        fprintf(stderr, "Usage: %s <number>\n", argv[0]);
-        return 1;
+        my_convert_bin((char *)argv[i]);
+        i++;
     }
-
-    int length = strlen(argv[1]);
-    char *mot = malloc(length + 1);
-
-    if (mot == NULL)
-    {
-        fprintf(stderr, "Erreur d'allocation de mémoire\n");
-        return 1;
-    }
-
-    strcpy(mot, argv[1]);
-
-    my_convert_bin(mot);
 
     return 0;
 }
