@@ -65,7 +65,7 @@
 void function(int sig, siginfo_t *info, void *context)
 {
     int signal_pid = info->si_pid;
-    printf("FROM[%i] receveid %i (%s)\n", signal_pid, sig., strsignal(sig));
+    printf("FROM[%i] receveid %i (%s)\n", signal_pid, sig, strsignal(sig));
 }
 
 int main(int argc, char const *argv[])
