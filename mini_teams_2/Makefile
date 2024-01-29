@@ -3,11 +3,11 @@ CFLAGS = -Wall -Wextra -Werror
 
 all: serveur client
 
-serveur: serveur.o
-	$(CC) $(CFLAGS) -o serveur serveur.o
+serveur: serveur.c
+	$(CC) $(CFLAGS) -o serveur serveur.c
 
-client: client.o
-	$(CC) $(CFLAGS) -o client client.o
+client: client.c
+	$(CC) $(CFLAGS) -o client client.
 
 serveur.o: serveur.c
 	$(CC) $(CFLAGS) -c serveur.c
@@ -23,4 +23,7 @@ fclean: clean
 
 re: fclean all
 
-.PHONY: all clean fclean re
+lclean: 
+	rm -f *.txt
+
+.PHONY: all clean fclean re lclean
