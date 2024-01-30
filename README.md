@@ -2,6 +2,19 @@
 
 ## Projet mini_teams
 
-- Makefile : `clean` `fclean` `re` `.PHONY`
-- client.c : script du client, usage : `./client <PID cible> <Message>`
-- serveur.c : script du serveur, usage : `./serveur`
+### Fichiers
+
+- Makefile : makefile du projet
+- client.c : script du client
+- serveur.c : script du serveur
+
+### Usage
+
+- make : `clean` `fclean` `re` `.PHONY`
+- client : `./client <PID cible> <Message>`
+- serveur : `./serveur`
+
+### Instructions
+
+- Lancer le serveur
+- Lancer le client en reseignant le PID du serveur et le message à envoyer
