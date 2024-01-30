@@ -24,6 +24,7 @@ int main()
     fflush(stdout);
 
     struct sigaction sa1, sa2, sa3;
+
     memset(&sa1, 0, sizeof(sa1));
     sa1.sa_handler = handleSIGUSR1;
     sigaction(SIGUSR1, &sa1, NULL);
@@ -96,9 +97,12 @@ void binaryToText(char *binary, char *text)
     while (*binary)
     {
         char byte = 0;
-        for (int i = 0; i < 8 && *binary; ++i)
+        int i = 0;
+
+        while (i < 8 && *binary)
         {
             byte = (byte << 1) | (*binary++ - '0');
+            i++;
         }
         *text++ = byte;
     }
@@ -107,7 +111,7 @@ void binaryToText(char *binary, char *text)
 
 void saveMessage(const char *message)
 {
-    FILE *file = fopen("messages.txt", "a");
+    FILE *file = fopen("logs.txt", "a");
     if (file != NULL)
     {
         fprintf(file, "%s\n", message);

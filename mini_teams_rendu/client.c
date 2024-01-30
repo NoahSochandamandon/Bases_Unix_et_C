@@ -18,9 +18,11 @@ int main(int argc, char *argv[])
     pid_t pid = atoi(argv[1]);
     char *message = argv[2];
 
-    for (int i = 0; message[i] != '\0'; ++i)
+    int i = 0;
+    while (message[i] != '\0')
     {
         sendSignals(pid, message[i]);
+        i++;
     }
 
     // Envoie du signal SIGALRM pour indiquer la fin du message
@@ -42,6 +44,6 @@ void sendSignals(pid_t pid, char c)
         {
             kill(pid, SIGUSR2);
         }
-        usleep(300); // Pause pour assurer la synchronisation
+        usleep(500); // Pause pour assurer la synchronisation
     }
 }

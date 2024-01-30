@@ -3,11 +3,11 @@ CFLAGS = -Wall -Wextra -Werror
 
 all: serveur client
 
-serveur: serveur.c
-	$(CC) $(CFLAGS) -o serveur serveur.c
+serveur: serveur.o
+	$(CC) $(CFLAGS) -o serveur serveur.o
 
-client: client.c
-	$(CC) $(CFLAGS) -o client client.
+client: client.o
+	$(CC) $(CFLAGS) -o client client.o
 
 serveur.o: serveur.c
 	$(CC) $(CFLAGS) -c serveur.c
