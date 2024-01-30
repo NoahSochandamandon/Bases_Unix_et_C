@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <signal.h>
 #include <unistd.h>
+#include <string.h>
 #include <time.h>
 
 // Fonction pour envoyer les signaux en fonction du message binaire
@@ -18,6 +19,14 @@ int main(int argc, char *argv[])
     pid_t pid = atoi(argv[1]);
     char *message = argv[2];
 
+    if (strlen(message) > 1024)
+    {
+        fprintf(stderr, "<Message> doit faire moins de 1024 charactères\n");
+        return EXIT_FAILURE;
+    }
+
+    printf("Sending to %d\n", pid);
+
     int i = 0;
     while (message[i] != '\0')
     {
@@ -25,15 +34,18 @@ int main(int argc, char *argv[])
         i++;
     }
 
-    // Envoie du signal SIGALRM pour indiquer la fin du message
-    kill(pid, SIGALRM);
+    sendSignals(pid, '\0');
+
+    printf("Done\n");
 
     return 0;
 }
 
 void sendSignals(pid_t pid, char c)
 {
-    for (int i = 7; i >= 0; --i)
+    int i = 7;
+
+    while (i >= 0)
     {
         int bit = (c >> i) & 1;
         if (bit == 1)
@@ -44,6 +56,7 @@ void sendSignals(pid_t pid, char c)
         {
             kill(pid, SIGUSR2);
         }
-        usleep(500); // Pause pour assurer la synchronisation
+        usleep(1000); // Pause pour assurer la synchronisation
+        i--;
     }
 }

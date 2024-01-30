@@ -25,16 +25,15 @@ int main(int argc, char *argv[])
         i++;
     }
 
-    sendSignals(pid, '\0');
+    // Envoie du signal SIGALRM pour indiquer la fin du message
+    kill(pid, SIGALRM);
 
     return 0;
 }
 
 void sendSignals(pid_t pid, char c)
 {
-    int i = 7;
-
-    while (i >= 0)
+    for (int i = 7; i >= 0; --i)
     {
         int bit = (c >> i) & 1;
         if (bit == 1)
@@ -45,7 +44,6 @@ void sendSignals(pid_t pid, char c)
         {
             kill(pid, SIGUSR2);
         }
-        usleep(1000); // Pause pour assurer la synchronisation
-        i--;
+        usleep(500); // Pause pour assurer la synchronisation
     }
 }
