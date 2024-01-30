@@ -3,80 +3,131 @@
 #include <signal.h>
 #include <unistd.h>
 #include <string.h>
+#include <time.h>
 
-#define MAX_BITS 8
 #define MAX_MESSAGE_LENGTH 1024
+#define BYTE 8
 
-static int bitsReceived = 0;
-static char currentChar = 0;
-static char message[MAX_MESSAGE_LENGTH];
-static int messageIndex = 0;
+char binaryChar[BYTE];
+int binaryIndex = 0;
+char message[MAX_MESSAGE_LENGTH];
+int messageIndex = 0;
+pid_t clientPid = 0;
 
-void handleSignal(int sig);
+void charToText(char letter);
+void handleSIGUSR1(int sig __attribute__((unused)), siginfo_t *si, void *context __attribute__((unused)));
+void handleSIGUSR2(int sig __attribute__((unused)), siginfo_t *si, void *context __attribute__((unused)));
+void saveMessage(const char *message);
+char binaryToASCII(char *binary);
 
 int main()
 {
-    printf("PID: %d\n", getpid());
+    printf("Miniteams starting...\n");
+    printf("My PID is %d\n", getpid());
+    printf("Waiting for new messages\n");
+    fflush(stdout);
 
-    struct sigaction sa;
-    memset(&sa, 0, sizeof(sa));
-    sa.sa_handler = &handleSignal;
-    sigfillset(&sa.sa_mask);  // Bloque les autres signaux pendant l'exécution du gestionnaire
-    sa.sa_flags = SA_RESTART; // Redémarre les fonctions si interrompues par un appel système
+    struct sigaction sa1, sa2;
 
-    sigaction(SIGUSR1, &sa, NULL);
-    sigaction(SIGUSR2, &sa, NULL);
+    memset(&sa1, 0, sizeof(sa1));
+    sa1.sa_sigaction = handleSIGUSR1;
+    sa1.sa_flags = SA_SIGINFO;
+    sigaction(SIGUSR1, &sa1, NULL);
 
-    memset(message, 0, sizeof(message)); // Initialise le buffer de message
+    memset(&sa2, 0, sizeof(sa2));
+    sa2.sa_sigaction = handleSIGUSR2;
+    sa1.sa_flags = SA_SIGINFO;
+    sigaction(SIGUSR2, &sa2, NULL);
 
     while (1)
     {
-        pause(); // Attend le signal indéfiniment
+        pause();
 
-        // A chaque signal reçu, vérifie si un caractère a été complètement reçu et affiche le message en cours
-        if (bitsReceived == 0 && messageIndex > 0)
+        if (binaryIndex == BYTE)
         {
-            printf("%s", message);            // Affiche le message reçu jusqu'à présent
-            fflush(stdout);                   // S'assure que le message est immédiatement affiché
-            memset(message, 0, messageIndex); // Efface le buffer après l'affichage
-            messageIndex = 0;                 // Réinitialise l'index pour le prochain message
+            char asciiChar = binaryToASCII(binaryChar);
+
+            if (asciiChar == '\0')
+            {
+                // Fin du message
+                message[messageIndex] = '\0';
+
+                time_t currentTime;
+                time(&currentTime);
+                struct tm *localTime = localtime(&currentTime);
+
+                // Traitement du message reçu
+                char formattedMessage[MAX_MESSAGE_LENGTH + 64];
+                sprintf(formattedMessage, "[%02d:%02d:%02d] Message de %d: %s\n", localTime->tm_hour, localTime->tm_min, localTime->tm_sec, clientPid, message);
+                saveMessage(formattedMessage);
+                printf("%s", formattedMessage);
+
+                // Réinitialiser pour le prochain message
+                memset(message, 0, MAX_MESSAGE_LENGTH);
+                messageIndex = 0;
+                clientPid = 0;
+            }
+
+            else
+            {
+                // Ajout du caractère au message
+                if (messageIndex < MAX_MESSAGE_LENGTH)
+                {
+                    message[messageIndex++] = asciiChar;
+                }
+            }
+
+            // Réinitialiser pour le prochain caractère
+            memset(binaryChar, 0, BYTE);
+            binaryIndex = 0;
         }
     }
 
-    return EXIT_SUCCESS;
+    return 0;
 }
 
-void handleSignal(int sig)
+char binaryToASCII(char *binary)
 {
-    if (sig == SIGINT)
+    char result = 0;
+    for (int i = 0; i < BYTE; ++i)
     {
-        printf("\n");
+        result = (result << 1) | (binary[i] - '0');
+    }
+    return result;
+}
+
+void handleSIGUSR1(int sig __attribute__((unused)), siginfo_t *si, void *context __attribute__((unused)))
+{
+    if (clientPid == 0)
+    {
+        clientPid = si->si_pid;
     }
 
-    // Ajoute un bit au caractère courant
-    if (sig == SIGUSR1)
+    if (binaryIndex < BYTE)
     {
-        currentChar |= (1 << (MAX_BITS - 1 - bitsReceived));
+        binaryChar[binaryIndex++] = '1';
     }
-    bitsReceived++;
+}
 
-    // Vérifie si tous les bits du caractère courant ont été reçus
-    if (bitsReceived == MAX_BITS)
+void handleSIGUSR2(int sig __attribute__((unused)), siginfo_t *si, void *context __attribute__((unused)))
+{
+    if (clientPid == 0)
     {
-        message[messageIndex++] = currentChar; // Ajoute le caractère au message
-        if (messageIndex < MAX_MESSAGE_LENGTH - 1)
-        {
-            message[messageIndex] = '\0'; // S'assure que le message est toujours terminé correctement
-        }
-        else
-        {
-            // Évite le débordement du buffer
-            fprintf(stderr, "Erreur : le message est trop long.\n");
-            exit(EXIT_FAILURE);
-        }
+        clientPid = si->si_pid;
+    }
 
-        // Réinitialise pour le prochain caractère
-        bitsReceived = 0;
-        currentChar = 0;
+    if (binaryIndex < BYTE)
+    {
+        binaryChar[binaryIndex++] = '0';
+    }
+}
+
+void saveMessage(const char *message)
+{
+    FILE *file = fopen("logs.txt", "a");
+    if (file != NULL)
+    {
+        fprintf(file, "%s\n", message);
+        fclose(file);
     }
 }

@@ -1,11 +1,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <signal.h>
-#include <string.h>
 #include <unistd.h>
+#include <string.h>
+#include <time.h>
+#include <ctype.h>
 
-void sendBit(pid_t pid, char bit);
-void sendChar(pid_t pid, char c);
+// Fonction pour envoyer les signaux en fonction du message binaire
+void sendSignals(pid_t pid, char c);
+int isNumeric(char *str);
 
 int main(int argc, char *argv[])
 {
@@ -15,40 +18,67 @@ int main(int argc, char *argv[])
         return EXIT_FAILURE;
     }
 
+    if (!isNumeric(argv[1]))
+    {
+        fprintf(stderr, "Erreur : l'argument <PID cible> doit être numérique.\n");
+        return 1;
+    }
+
     pid_t pid = atoi(argv[1]);
     char *message = argv[2];
 
-    size_t i = 0;
-    while (i < strlen(message))
+    if (strlen(message) > 1024)
     {
-        sendChar(pid, message[i]);
+        fprintf(stderr, "Erreur : le <Message> doit faire moins de 1024 charactères\n");
+        return EXIT_FAILURE;
+    }
+
+    printf("Sending to %d\n", pid);
+
+    int i = 0;
+    while (message[i] != '\0')
+    {
+        sendSignals(pid, message[i]);
         i++;
     }
-    i = 0;
-    while (i < 1)
-    {
-        sendChar(pid, '\n');
-        i++;
-    }
 
-    return EXIT_SUCCESS;
+    sendSignals(pid, '\0');
+
+    printf("Done\n");
+
+    return 0;
 }
 
-void sendChar(pid_t pid, char c)
+void sendSignals(pid_t pid, char c)
 {
-    for (int i = 7; i >= 0; --i)
+    int i = 7;
+
+    while (i >= 0)
     {
-        sendBit(pid, (c & (1 << i)) ? '1' : '0');
+        int bit = (c >> i) & 1;
+        if (bit == 1)
+        {
+            kill(pid, SIGUSR1);
+        }
+        else
+        {
+            kill(pid, SIGUSR2);
+        }
+        usleep(200); // Pause pour assurer la synchronisation
+        i--;
     }
+    usleep(1000);
 }
 
-void sendBit(pid_t pid, char bit)
+int isNumeric(char *str)
 {
-    int signal = bit == '1' ? SIGUSR1 : SIGUSR2;
-    if (kill(pid, signal) == -1)
+    while (*str)
     {
-        perror("Erreur d'envoi de signal");
-        exit(EXIT_FAILURE);
+        if (!isdigit(*str))
+        {
+            return 0;
+        }
+        str++;
     }
-    usleep(1000); // Petite pause pour s'assurer que le signal est reçu
+    return 1;
 }
