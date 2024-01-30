@@ -57,7 +57,7 @@ int main()
                 struct tm *localTime = localtime(&currentTime);
 
                 // Traitement du message reçu
-                char formattedMessage[MAX_MESSAGE_LENGTH + 50];
+                char formattedMessage[MAX_MESSAGE_LENGTH + 64];
                 sprintf(formattedMessage, "[%02d:%02d:%02d] Message de %d: %s\n", localTime->tm_hour, localTime->tm_min, localTime->tm_sec, clientPid, message);
                 saveMessage(formattedMessage);
                 printf("%s", formattedMessage);
