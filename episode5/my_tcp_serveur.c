@@ -72,7 +72,7 @@ int main(int argc, char *argv[])
         char *client_ip = inet_ntoa(client_addr.sin_addr);
         int client_port = ntohs(client_addr.sin_port);
 
-        int valread = read(new_socket, buffer, BUFFER_SIZE);
+        // int valread = read(new_socket, buffer, BUFFER_SIZE);
         printf("Reçu de %s:%d => %s\n", client_ip, client_port, buffer);
         close(new_socket); // Fermer la socket de connexion avec le client actuel
 
