@@ -10,6 +10,12 @@
 #define BUFFER_SIZE 1024
 #define PSEUDO_SIZE 32
 
+void printPrompt()
+{
+    printf("Send a new message: ");
+    fflush(stdout); // Assurez-vous que l'invite est immédiatement affichée à l'écran
+}
+
 int main(int argc, char *argv[])
 {
     if (argc != 4)
@@ -48,11 +54,13 @@ int main(int argc, char *argv[])
     // Envoi du pseudo au serveur
     send(sock, argv[3], strlen(argv[3]), 0);
 
+    printPrompt(); // Affiche l'invite pour la première fois après la connexion
+
     while (1)
     {
         FD_ZERO(&readfds);
         FD_SET(sock, &readfds);
-        FD_SET(0, &readfds);
+        FD_SET(STDIN_FILENO, &readfds);
 
         select(sock + 1, &readfds, NULL, NULL, NULL);
 
@@ -62,25 +70,27 @@ int main(int argc, char *argv[])
             if (valread > 0)
             {
                 buffer[valread] = '\0';
-                printf("%s\n", buffer);
+                printf("\n%s\n", buffer);
+                printPrompt(); // Réaffiche l'invite après chaque message reçu
             }
         }
 
-        if (FD_ISSET(0, &readfds))
+        if (FD_ISSET(STDIN_FILENO, &readfds))
         {
             fgets(buffer, BUFFER_SIZE, stdin);
             buffer[strcspn(buffer, "\n")] = 0; // Supprime le retour à la ligne
 
-            char messageToSend[BUFFER_SIZE] = {0}; // Assurez-vous que le tampon est vide
-            strncpy(messageToSend, argv[3], PSEUDO_SIZE - 1);
-            strcat(messageToSend, ": "); // Utilisation de strcat pour ajouter ": "
+            if (strlen(buffer) > 0)
+            { // Vérifie si l'utilisateur a saisi quelque chose avant d'envoyer
+                char messageToSend[BUFFER_SIZE] = {0};
+                strncpy(messageToSend, argv[3], PSEUDO_SIZE - 1);
+                strcat(messageToSend, ": ");
+                size_t remainingSpace = BUFFER_SIZE - strlen(messageToSend) - 1;
+                strncat(messageToSend, buffer, remainingSpace);
 
-            // Calcule l'espace restant après l'ajout du pseudo et de ": "
-            size_t remainingSpace = BUFFER_SIZE - strlen(messageToSend) - 1;
-            strncat(messageToSend, buffer, remainingSpace);
-
-            send(sock, messageToSend, strlen(messageToSend), 0);
-            printf("Send a new message: ");
+                send(sock, messageToSend, strlen(messageToSend), 0);
+            }
+            printPrompt(); // Réaffiche l'invite après l'envoi d'un message
         }
     }
 
