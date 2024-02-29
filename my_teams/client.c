@@ -10,11 +10,7 @@
 #define BUFFER_SIZE 1024
 #define PSEUDO_SIZE 32
 
-void printPrompt()
-{
-    printf("Send a new message: ");
-    fflush(stdout); // Assurez-vous que l'invite est immédiatement affichée à l'écran
-}
+void printPrompt();
 
 int main(int argc, char *argv[])
 {
@@ -95,4 +91,10 @@ int main(int argc, char *argv[])
     }
 
     return 0;
+}
+
+void printPrompt()
+{
+    printf("Send a new message: ");
+    fflush(stdout); // Assurez-vous que l'invite est immédiatement affichée à l'écran
 }
