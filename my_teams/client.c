@@ -96,5 +96,5 @@ int main(int argc, char *argv[])
 void printPrompt()
 {
     printf("Send a new message: ");
-    fflush(stdout); // Assurez-vous que l'invite est immédiatement affichée à l'écran
+    fflush(stdout);
 }

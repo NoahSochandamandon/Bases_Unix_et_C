@@ -5,7 +5,7 @@
 #include <arpa/inet.h>
 #include <sys/select.h>
 #include <netinet/in.h>
-#include <errno.h> // Inclus pour gestion des erreurs
+#include <errno.h>
 
 #define BUFFER_SIZE 1024
 #define MAX_CLIENTS 30
@@ -102,7 +102,7 @@ int main(int argc, char *argv[])
             valread = read(new_socket, buffer, PSEUDO_SIZE - 1);
             if (valread > 0)
             {
-                buffer[valread] = '\0'; // Assurez-vous que le pseudo est une chaîne terminée par NULL
+                buffer[valread] = '\0'; // Vérification que le pseudo est une chaîne terminée par NULL
                 printf("New connection - socket fd is %d, ip is: %s, port: %d, pseudo: %s\n", new_socket, inet_ntoa(address.sin_addr), ntohs(address.sin_port), buffer);
 
                 for (i = 0; i < MAX_CLIENTS; i++)
